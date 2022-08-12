@@ -1,5 +1,5 @@
 import torch
-from patchify.pt import pt
+from pypatchify.pt import pt
 
 class TestPT:
 

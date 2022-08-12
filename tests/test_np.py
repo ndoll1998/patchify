@@ -1,5 +1,5 @@
 import numpy
-from patchify.np import np
+from pypatchify.np import np
 
 class TestNP:
 

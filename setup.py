@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(
-    name="patchify",
+    name="pypatchify",
     version="0.1.0",
     description="Fast and easy image and n-dimensional volume patchification",
     long_description=open("README.md", "r").read(),
@@ -9,8 +9,8 @@ setup(
     author="Niclas Doll",
     author_email="niclas@amazonis.net",
     url="https://github.com/ndoll1998/patchify/tree/master",
-    packages=['patchify'],
-    package_dir={'patchify': 'patchify'},
+    packages=['pypatchify'],
+    package_dir={'pypatchify': 'pypatchify'},
     classifiers=[
         "Environment :: GPU :: NVIDIA CUDA",
         "Intended Audience :: Science/Research",
