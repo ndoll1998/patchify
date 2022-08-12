@@ -1,12 +1,19 @@
 # PyPatchify
 
-![Tests Master](https://github.com/ndoll1998/patchify/workflows/Tests%20Master/badge.svg)
-![Publish PyPI](https://github.com/ndoll1998/patchify/workflows/Publish%20Python%20distributions%20to%20PyPI/badge.svg)
+![Tests Master](https://github.com/ndoll1998/patchify/workflows/Tests/badge.svg)
+![Publish PyPI](https://github.com/ndoll1998/patchify/workflows/PyPI/badge.svg)
+
 Fast and easy image and n-dimensional volume patchification
 
-## Requirements
+## Install and Requirements
 
-The library supports both numpy arrays and pytorch tensors. However pytorch is not strictly required. The only necessary dependency is:
+The package can be installed from [PyPI](https://pypi.org/project/pypatchify/):
+
+```bash
+pip install pypatchify
+```
+
+It supports both numpy arrays and pytorch tensors. However pytorch is not strictly required. The only necessary dependency is:
 
  - numpy >= 1.21.5
 
