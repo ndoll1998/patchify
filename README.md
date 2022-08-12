@@ -34,7 +34,6 @@ import numpy as np
 imgs = np.random.uniform(0, 1, size=(16, 3, 256, 256))
 # patchify into non-overlapping blocks of size 64x64
 patched_imgs = pypatchify.patchify(imgs, (64, 64))
-
 # re-create the original images from the patches
 imgs = pypatchify.unpatchify(patched_imgs, (256, 256))
 ```
@@ -53,13 +52,13 @@ Note that the implementations are not restricted to 2d images only but can patch
 
 ```python
 vols = np.random.uniform(0, 1, size=(16, 32, 32, 64, 64))
-# patchify into non-overlapping blocks of size 64x64
+# patchify into non-overlapping blocks of size 61x8x32x16
 patched_vols = pypatchify.patchify_to_batches(vols, (16, 8, 32, 16), batch_dim=0)
 # re-create the original images from the patches
 vols = pypatchify.unpatchify_from_batches(patched_vols, (32, 32, 64, 64), batch_dim=0)
 ```
 
-## GPU-Acceleration
+## GPU-Acceleration and Differentiable
 
 Also when working with neural networks its probably more convenient to directly work with pytorch tensors. This can be done by simply passing the torch tensors to the function at hand. Note that all implementations allow gpu-tensors which drastically decrease the runtime of any of the patchification functions. Also there is no need to move memory between cpu and gpu.
 
@@ -67,11 +66,30 @@ Also when working with neural networks its probably more convenient to directly 
 import torch
 import pypatchify
 # create a random img tensor and move to cuda
-imgs = torch.rand((16, 3, 256, 256)).cuda()
+imgs = torch.rand(16, 3, 256, 256).cuda()
 # patchify into non-overlapping blocks of size 64x64
 patched_imgs = pypatchify.patchify_to_batches(imgs, (64, 64), batch_dim=0)
 # re-create the original images from the patches
 imgs = pypatchify.unpatchify_from_batches(patched_imgs, (256, 256), batch_dim=0)
+```
+
+Furthermore all the functions are completly differentiable allowing for gradient propagation through patchification and un-patchification.
+
+```python
+# let f and g be differentiable functions
+# possibly neural networks
+f = torch.tanh # processes the images
+g = torch.sigmoid # processes the patched images
+# create a random img tensor and move to cuda
+imgs = torch.rand(16, 3, 256, 256, requires_grad=True)
+# apply functions and patchify
+patched_imgs = pypatchify.patchify_to_batches(f(imgs), (64, 64), batch_dim=0)
+unpatched_imgs = pypatchify.unpatchify_from_batches(g(patched_imgs), (256, 256), batch_dim=0)
+# compute some kind of loss and backpropagate
+loss = unpatched_imgs.sum() # dummy loss
+loss.backward()
+# check gradients in input imgs
+grads = imgs.grad # should be all ones
 ```
 
 ## Other Frameworks

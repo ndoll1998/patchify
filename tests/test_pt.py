@@ -31,4 +31,26 @@ class TestPT:
             t = pt.patchify_to_batches(t_orig, patch, bdim)
             t = pt.unpatchify_from_batches(t, shape[-n:], bdim)
             assert (t == t_orig).all()
+
+    def test_backward(self):        
         
+        f = torch.tanh
+        g = torch.sigmoid
+        # create a random img tensor and move to cuda
+        imgs = torch.rand(16, 3, 256, 256, requires_grad=True)
+        # preprocess and patchify
+        patched_imgs = pt.patchify_to_batches(f(imgs), (64, 64), batch_dim=0)
+        unpatched_imgs = pt.unpatchify_from_batches(g(patched_imgs), (256, 256), batch_dim=0)
+        # compute some kind of loss and backpropagate
+        loss = unpatched_imgs.sum() # dummy loss
+        loss.backward()
+        # store gradient and reset
+        grad = imgs.grad
+        imgs.grad = None
+        
+        # compute gradient without patchification
+        loss = g(f(imgs)).sum()
+        loss.backward()
+        
+        # check gradient
+        assert (imgs.grad == grad).all()
