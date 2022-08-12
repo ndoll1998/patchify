@@ -1,4 +1,4 @@
-from typing import Optional, Tuple, Callable
+from typing import Optional, Sequence, Callable
 from itertools import chain
 
 class Patchify(object):
@@ -12,16 +12,16 @@ class Patchify(object):
     as_strided:Callable
 
     @classmethod
-    def sliding_window(cls, t, window_dims:Tuple[int], strides:Tuple[int]):
+    def sliding_window(cls, t, window_dims:Sequence[int], strides:Sequence[int]):
         """ Sliding Window view on given tensor
             
             Args:
                 t (Tensor): 
                     tensor object of dimension k on which to apply the sliding window view
-                window_dims (Tuple[int]): 
+                window_dims (Sequence[int]): 
                     dimensions of sliding window. Window dimensionality n must be <= k.
                     Windows will be applied to the last n dimensions of the input tensor.
-                strides (Tuple[int]): 
+                strides (Sequence[int]): 
                     strides (i.e. step size) of sliding window in each dimension
 
             Returns:
@@ -38,19 +38,19 @@ class Patchify(object):
         if len(t_shape) < n:
             raise ValueError("Cannot create sliding windows of dimension %i on tensor of dimension %i." % (n, len(t_shape)))
         # compute new shape and strides for sliding window view
-        shape = t_shape[:-n] + tuple((d - k) // s + 1 for d, k, s in zip(t_shape[-n:], window_dims, strides)) + window_dims
-        strides = t_strides[:-n] + tuple(ts * ws for ts, ws in zip(t_strides[-n:], strides)) + t_strides[-n:]
+        shape = chain(t_shape[:-n], ((d - k) // s + 1 for d, k, s in zip(t_shape[-n:], window_dims, strides)), window_dims)
+        strides = chain(t_strides[:-n], (ts * ws for ts, ws in zip(t_strides[-n:], strides)), t_strides[-n:])
         # apply shape and strides
-        return cls.as_strided(t, shape, strides)
+        return cls.as_strided(t, tuple(shape), tuple(strides))
 
     @classmethod
-    def patchify(cls, t, patch_sizes:Tuple[int]):
+    def patchify(cls, t, patch_sizes:Sequence[int]):
         """ Patchify n-dimension tensor with given patch size 
 
             Args:
                 t (Tensor): 
                     tensor object of dimension k which to patch into non-overlapping windows
-                patch_sizes (Tuple[int]): 
+                patch_sizes (Sequence[int]): 
                     dimensions of patches. Patch dimensionality n must be <= k.
                     Patches will be applied to the last n dimensions of the input tensor.
 
@@ -62,7 +62,7 @@ class Patchify(object):
         return cls.sliding_window(t, patch_sizes, patch_sizes)
 
     @classmethod
-    def unpatchify(cls, t, unpatched_sizes:Tuple[int]):
+    def unpatchify(cls, t, unpatched_sizes:Sequence[int]):
         """ Merge patches of given patched tensor
 
             Args:
@@ -70,7 +70,7 @@ class Patchify(object):
                     tensor storing patches to merge. Shape of the tensor must match
                     (..., p_1, ..., p_n, *patch_sizes) where p_i is the
                     number of patches in the i-th dimension
-                unpatched_sizes (Tuple[int]):
+                unpatched_sizes (Sequence[int]):
                     sizes of the unpatched images/volumes, i.e. 
                     unpatched_sizes[i-1] = p_i * patch_sizes[i]
         
@@ -83,19 +83,19 @@ class Patchify(object):
         shape = cls.shape(t)
         k, n = len(shape), len(unpatched_sizes)
         # re-order dimensions
-        dim_idx = list(chain(range(0, k - 2*n), *zip(range(k - 2*n, k-n), range(k-n, k))))
-        t = cls.transpose(t, dim_idx)
+        dim_idx = chain(range(0, k - 2*n), *zip(range(k - 2*n, k-n), range(k-n, k)))
+        t = cls.transpose(t, tuple(dim_idx))
         # collapse patches
         merged_shape = chain(shape[:k-2*n], unpatched_sizes)
         return cls.reshape(t, tuple(merged_shape))
 
     @classmethod
-    def collapse_dims(cls, t, dims:Tuple[int], target_dim:int =0):
+    def collapse_dims(cls, t, dims:Sequence[int], target_dim:int =0):
         """ Collapse multiple dimensions of a given tensor 
 
             Args:
                 t (Tensor): input tensor
-                dims (Tuple[int]): dimensions to collapse in the input tensor
+                dims (Sequence[int]): dimensions to collapse in the input tensor
                 target_dim (int): dimension into which to collapse the given dimensions. Defaults to 0.
         
             Returns:
@@ -111,22 +111,22 @@ class Patchify(object):
         set_dims = set(dims) # faster lookup :)
         remain_dims = [i for i in range(n) if i not in set_dims]
         # transpose dimensions
-        dim_idx = remain_dims[:target_dim] + dims + remain_dims[target_dim:]
-        t = cls.transpose(t, dim_idx)
+        dim_idx = chain(remain_dims[:target_dim], dims, remain_dims[target_dim:])
+        t = cls.transpose(t, tuple(dim_idx))
         # collapse dimensions
         shape = cls.shape(t) # get new shape
         shape = shape[:target_dim] + (-1,) + shape[target_dim + k:]
         return cls.reshape(t, shape)
 
     @classmethod
-    def patchify_to_batches(cls, t, patch_sizes:Tuple[int], batch_dim:Optional[int] =0):
+    def patchify_to_batches(cls, t, patch_sizes:Sequence[int], batch_dim:Optional[int] =0):
         """ Patchify n-dimension tensor with given patch size and collapse patching
             dimensions into batch dimension.
         
             Args:
                 t (Tensor):
                     tensor object of dimension k which to patch into non-overlapping windows
-                patch_sizes (Tuple[int]): 
+                patch_sizes (Sequence[int]): 
                     dimensions of patches. Patch dimensionality n must be <= k.
                     Patches will be applied to the last n dimensions of the input tensor.
                 batch_dim (Optional[int]):
@@ -149,13 +149,13 @@ class Patchify(object):
         )
 
     @classmethod
-    def unpatchify_from_batches(cls, t, unpatched_sizes:Tuple[int], batch_dim:Optional[int] =0):
+    def unpatchify_from_batches(cls, t, unpatched_sizes:Sequence[int], batch_dim:Optional[int] =0):
         """ Merge patches of given patched tensor with patched collapsed
             into batch dimension
 
             Args:
                 t (Tensor): tensor storing patches to merge.
-                unpatched_sizes (Tuple[int]):
+                unpatched_sizes (Sequence[int]):
                     sizes of the unpatched images/volumes, i.e. 
                     unpatched_sizes[i-1] = p_i * patch_sizes[i]
                 batch_dim (Optional[int]):
