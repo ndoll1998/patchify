@@ -77,11 +77,11 @@ def patchify_to_batches(t, patch_sizes:Tuple[int], batch_dim:Optional[int] =0):
     """
     # use pytorch if given
     if IS_TORCH_AVAILABLE and isinstance(t, torch.Tensor):
-        return pt.patchify_to_batches(t, patch_sizes)
+        return pt.patchify_to_batches(t, patch_sizes, batch_dim)
     # fallback to numpy
-    return np.patchify_to_batches(t, patch_sizes)
+    return np.patchify_to_batches(t, patch_sizes, batch_dim)
     
-def unpatchify_from_batches(cls, t, unpatched_sizes:Tuple[int], batch_dim:Optional[int] =0):
+def unpatchify_from_batches(t, unpatched_sizes:Tuple[int], batch_dim:Optional[int] =0):
     """ Merge patches of given patched tensor with patched collapsed
         into batch dimension
 
@@ -101,6 +101,6 @@ def unpatchify_from_batches(cls, t, unpatched_sizes:Tuple[int], batch_dim:Option
     """
     # use pytorch if given
     if IS_TORCH_AVAILABLE and isinstance(t, torch.Tensor):
-        return pt.unpatchify_from_batches(t, unpatched_sizes)
+        return pt.unpatchify_from_batches(t, unpatched_sizes, batch_dim)
     # fallback to numpy
-    return np.unpatchify_from_batches(t, unpatched_sizes)
+    return np.unpatchify_from_batches(t, unpatched_sizes, batch_dim)
