@@ -1,7 +1,7 @@
 import torch
 from .patch import Patchify
 
-class pt(Patchify):
+class pt(Patchify[torch.Tensor]):
     """ Collection of patchification functionality for torch tensors """
     # get shape and strides from tensor object
     shape = torch.Tensor.size
