@@ -1,4 +1,5 @@
 from .np import np
+from numpy import ndarray
 
 try:
     import torch
@@ -9,9 +10,9 @@ except ImportError:
 if IS_TORCH_AVAILABLE:
     from .pt import pt
 
-from typing import Optional, Tuple
+from typing import Any, Optional, Sequence, Union
 
-def patchify(t, patch_sizes:Tuple[int]):
+def patchify(t:Union[ndarray, Any], patch_sizes:Sequence[int]) -> Union[ndarray, Any]:
     """ Patchify n-dimension tensor with given patch size 
 
         Args:
@@ -33,7 +34,7 @@ def patchify(t, patch_sizes:Tuple[int]):
     return np.patchify(t, patch_sizes)
 
     
-def unpatchify(t, unpatched_sizes:Tuple[int]):
+def unpatchify(t:Union[ndarray, Any], unpatched_sizes:Sequence[int]) -> Union[ndarray, Any]:
     """ Merge patches of given patched tensor
 
         Args:
@@ -56,7 +57,7 @@ def unpatchify(t, unpatched_sizes:Tuple[int]):
     # fallback to numpy
     return np.unpatchify(t, unpatched_sizes)
     
-def patchify_to_batches(t, patch_sizes:Tuple[int], batch_dim:Optional[int] =0):
+def patchify_to_batches(t:Union[ndarray, Any], patch_sizes:Sequence[int], batch_dim:Optional[int] =0) -> Union[ndarray, Any]:
     """ Patchify n-dimension tensor with given patch size and collapse patching
         dimensions into batch dimension.
     
@@ -81,7 +82,7 @@ def patchify_to_batches(t, patch_sizes:Tuple[int], batch_dim:Optional[int] =0):
     # fallback to numpy
     return np.patchify_to_batches(t, patch_sizes, batch_dim)
     
-def unpatchify_from_batches(t, unpatched_sizes:Tuple[int], batch_dim:Optional[int] =0):
+def unpatchify_from_batches(t:Union[ndarray, Any], unpatched_sizes:Sequence[int], batch_dim:Optional[int] =0) -> Union[ndarray, Any]:
     """ Merge patches of given patched tensor with patched collapsed
         into batch dimension
 
