@@ -105,7 +105,7 @@ The library makes it very easy to support other frameworks besides numpy and pyt
 Note that most frameworks already support these functions. To now integrate the framework just inherit from the `pypatchify.patch.Patchify` class and enter the functions:
 
 ```python
-class NewFramework(Patchify):
+class NewFramework(Patchify[NewTensorType]):
     # get shape and strides from tensor object
     shape:Callable
     strides:Callable

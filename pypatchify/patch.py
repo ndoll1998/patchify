@@ -1,7 +1,9 @@
-from typing import Optional, Sequence, Callable
+from typing import Optional, Sequence, Callable, Generic, TypeVar
 from itertools import chain
 
-class Patchify(object):
+T = TypeVar('T')
+
+class Patchify(Generic[T]):
 
     # get shape and strides from tensor object
     shape:Callable
@@ -12,7 +14,7 @@ class Patchify(object):
     as_strided:Callable
 
     @classmethod
-    def sliding_window(cls, t, window_dims:Sequence[int], strides:Sequence[int]):
+    def sliding_window(cls, t, window_dims:Sequence[int], strides:Sequence[int]) -> T:
         """ Sliding Window view on given tensor
             
             Args:
@@ -44,7 +46,7 @@ class Patchify(object):
         return cls.as_strided(t, tuple(shape), tuple(strides))
 
     @classmethod
-    def patchify(cls, t, patch_sizes:Sequence[int]):
+    def patchify(cls, t, patch_sizes:Sequence[int]) -> T:
         """ Patchify n-dimension tensor with given patch size 
 
             Args:
@@ -62,7 +64,7 @@ class Patchify(object):
         return cls.sliding_window(t, patch_sizes, patch_sizes)
 
     @classmethod
-    def unpatchify(cls, t, unpatched_sizes:Sequence[int]):
+    def unpatchify(cls, t, unpatched_sizes:Sequence[int]) -> T:
         """ Merge patches of given patched tensor
 
             Args:
@@ -90,7 +92,7 @@ class Patchify(object):
         return cls.reshape(t, tuple(merged_shape))
 
     @classmethod
-    def collapse_dims(cls, t, dims:Sequence[int], target_dim:int =0):
+    def collapse_dims(cls, t, dims:Sequence[int], target_dim:int =0) -> T:
         """ Collapse multiple dimensions of a given tensor 
 
             Args:
@@ -119,7 +121,7 @@ class Patchify(object):
         return cls.reshape(t, shape)
 
     @classmethod
-    def patchify_to_batches(cls, t, patch_sizes:Sequence[int], batch_dim:Optional[int] =0):
+    def patchify_to_batches(cls, t, patch_sizes:Sequence[int], batch_dim:Optional[int] =0) -> T:
         """ Patchify n-dimension tensor with given patch size and collapse patching
             dimensions into batch dimension.
         
@@ -149,7 +151,7 @@ class Patchify(object):
         )
 
     @classmethod
-    def unpatchify_from_batches(cls, t, unpatched_sizes:Sequence[int], batch_dim:Optional[int] =0):
+    def unpatchify_from_batches(cls, t, unpatched_sizes:Sequence[int], batch_dim:Optional[int] =0) -> T:
         """ Merge patches of given patched tensor with patched collapsed
             into batch dimension
 
