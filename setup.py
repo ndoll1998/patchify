@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name="pypatchify",
-    version="0.1.3",
+    version="0.1.4",
     description="Fast and easy image and n-dimensional volume patchification",
     long_description=open("README.md", "r").read(),
     long_description_content_type='text/markdown',
